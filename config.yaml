@@ -1,0 +1,71 @@
+audio:
+  # null = 系统默认设备；用 python -m src.main --list-devices 查看编号
+  input_device: null
+  output_device: null
+  sample_rate: 16000
+  # 每块 32ms = 512 采样，正好是 silero-vad 的推理帧长
+  block_ms: 32
+
+wake:
+  enabled: true
+  # 若该路径存在则加载文件，否则按 name 使用 openwakeword 自带模型
+  model: models/wake/hey_jarvis_v0.1.onnx
+  name: hey_jarvis_v0.1
+  threshold: 0.55
+  cooldown_s: 1.0
+  ack: true
+
+vad:
+  backend: onnx          # onnx | energy
+  model: models/vad/silero_vad.onnx
+  threshold: 0.5
+  start_frames: 2        # 连续 2 帧超阈值才算开口（滤掉爆破音）
+  min_speech_ms: 250     # 短于这个时长判为噪声丢弃
+  end_silence_ms: 600    # 静音这么久认为说完了
+  max_utterance_s: 20
+  pre_roll_frames: 6     # 保留开口前 6 帧，避免吃掉第一个字
+  energy_threshold: 0.015  # backend=energy 时使用
+
+asr:
+  model: small
+  model_dir: models/whisper
+  compute_type: int8
+  threads: 4
+  language: zh
+  # 加简体中文提示，能明显减少输出繁体字
+  initial_prompt: "以下是普通话的句子。"
+
+llm:
+  base_url: http://127.0.0.1:8080/v1
+  api_key: sk-local
+  model: qwen
+  temperature: 0.6
+  max_tokens: 300
+  history_turns: 4
+  system_prompt: |
+    你是一个语音助手，你的回答会被直接朗读出来，用户是听而不是看。
+    规则：
+    1. 口语化、简短，通常一到三句话就够，除非用户明确要求详细说明。
+    2. 绝对不要使用 Markdown、列表、编号、代码块、表情符号、括号注释。
+    3. 不要重复用户的问题，直接给答案。
+    4. 数字和单位用中文习惯的说法，例如"三点五公里"而不是"3.5km"。
+    5. 只用中文回答，不要夹带英文单词或拼音。
+    6. 不确定就直说不知道，不要编造。
+
+tts:
+  engine: piper
+  model: models/piper/zh_CN-huayan-medium.onnx
+  config: models/piper/zh_CN-huayan-medium.onnx.json
+  exe: models/piper/piper.exe
+  # piper 进程模式下的合成超时
+  timeout_s: 20
+
+split:
+  # 遇到逗号也要切，但要攒够这么多字，避免碎片化发音
+  min_chars: 8
+  max_chars: 24
+
+playback:
+  # 外放时开打断会把自己的声音当成人声，只有在戴耳机时才建议打开
+  barge_in: false
+  barge_in_frames: 10

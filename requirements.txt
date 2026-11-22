@@ -1,0 +1,22 @@
+# 语音流水线
+numpy>=1.26
+sounddevice>=0.4.6
+PyYAML>=6.0
+
+# 语音识别（CPU int8，不依赖 torch）
+faster-whisper>=1.0.0
+
+# VAD / 唤醒词 / TTS 共用 onnxruntime
+onnxruntime>=1.17.0
+openwakeword>=0.6.0
+
+# 大模型客户端（llama-server 是 OpenAI 兼容接口）
+openai>=1.30.0
+
+# 模型下载
+huggingface_hub>=0.23.0
+
+# 语音合成。Windows 上若这一行装不上，跳过它即可：
+# 程序会自动降级到 piper.exe 子进程或 Windows SAPI
+piper-tts>=1.2.0
+pyttsx3>=2.90
